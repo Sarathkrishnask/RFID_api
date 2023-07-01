@@ -1,0 +1,108 @@
+To create a Flutter app with native Android code to read UHF RFID tags, you can follow these steps:
+
+Create a new Flutter project:
+bash
+Copy code
+flutter create uhf_rfid_app
+cd uhf_rfid_app
+Open the android folder of your Flutter project in Android Studio.
+
+Add the necessary permissions to the app's AndroidManifest.xml file:
+
+xml
+Copy code
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.NFC" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+Create a new Java class called RFIDReader.java under the android/app/src/main/java/com/example/uhf_rfid_app/ directory. This class will handle the UHF RFID functionality.
+java
+Copy code
+package com.example.uhf_rfid_app;
+
+import android.content.IntentFilter;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
+import android.nfc.tech.NfcA;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
+import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.PluginRegistry;
+
+public class RFIDReader implements PluginRegistry.NewIntentListener {
+    private static final String CHANNEL_NAME = "uhf_rfid_channel";
+    private static final int MAX_TAG_ID_LENGTH = 8;
+
+    private FlutterActivity activity;
+    private NfcAdapter nfcAdapter;
+    private boolean isReading = false;
+    private Handler mainHandler;
+    private MethodChannel methodChannel;
+
+    RFIDReader(FlutterActivity activity, FlutterEngine flutterEngine) {
+        this.activity = activity;
+        this.mainHandler = new Handler(Looper.getMainLooper());
+
+        methodChannel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL_NAME);
+        methodChannel.setMethodCallHandler(this::handleMethodCall);
+
+        nfcAdapter = NfcAdapter.getDefaultAdapter(activity);
+        if (nfcAdapter != null) {
+            IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+            IntentFilter[] intentFilters = new IntentFilter[]{tagDetected};
+
+            String[][] techList = new String[][]{
+                    {NfcA.class.getName()},
+                    {Ndef.class.getName()}
+            };
+
+            activity.addNewIntentListener(this);
+            activity.registerReceiver(nfcBroadcastReceiver, tagDetected);
+            nfcAdapter.enableForegroundDispatch(activity, nfcPendingIntent, intentFilters, techList);
+        }
+    }
+
+    private void handleMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
+        switch (call.method) {
+            case "startReading":
+                startReading();
+                result.success(null);
+                break;
+            case "stopReading":
+                stopReading();
+                result.success(null);
+                break;
+            default:
+                result.notImplemented();
+        }
+    }
+
+    private void startReading() {
+        if (!isReading) {
+            isReading = true;
+            showToast("Started reading UHF RFID tags.");
+        }
+    }
+
+    private void stopReading() {
+        if (isReading) {
+            isReading = false;
+            showToast("Stopped reading UHF RFID tags.");
+        }
+    }
+
+    private final BroadcastReceiver nfcBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (isReading) {
+                Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+                if (tag != null) {
+                    byte[] idBytes = tag.getId();
+                   
