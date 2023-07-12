@@ -39,7 +39,7 @@ def validate_json(value):
 Email login validators
 """
 def Email_Login_Validators(data):
-    json_keys =['email','password','role']
+    json_keys =['email','password']
     for val in json_keys:
         if  val not in dict.keys(data):
             return False

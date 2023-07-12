@@ -40,4 +40,4 @@ class UserDetailViewSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id','firstname','lastname','email','is_email_verified','phone_number','roles','role_id','is_phone_verified','is_active','image','country','country_code','address1','city','state','address2','pincode']
+        fields = ['id','firstname','lastname','email','phone_number','roles','role_id','ward_number','hospital_number','bed_number','out_perms']

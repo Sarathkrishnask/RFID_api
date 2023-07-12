@@ -4,3 +4,59 @@ Response() got an unexpected keyword argument 'status': forget password
 Response() got an unexpected keyword argument 'status': forget password
 Response() got an unexpected keyword argument 'status': forget password
 Response() got an unexpected keyword argument 'status': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'NoneType' object has no attribute 'id': forget password
+'NoneType' object has no attribute 'id': forget password
+UNIQUE constraint failed: rfid_otp_auth.user_id: forget password
+UNIQUE constraint failed: rfid_otp_auth.user_id: forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+'function' object has no attribute 'choice': forget password
+local variable 'data' referenced before assignment: forget password
+local variable 'data' referenced before assignment: forget password
+name 'data' is not defined: forget password
+name 'data' is not defined: forget password
+name 'data' is not defined: forget password
+name 'data' is not defined: forget password
+name 'data' is not defined: forget password
+name 'data' is not defined: forget password
+name 'data' is not defined: forget password
+name 'data' is not defined: forget password
+local variable 'e' referenced before assignment: forget password
+local variable 'e' referenced before assignment: forget password
+name 'generate_random_password' is not defined: forget password
+name 'generate_random_password' is not defined: forget password
+name 'generate_random_password' is not defined: forget password
+name 'generate_random_password' is not defined: forget password
+name 'datas' is not defined: forget password
+name 'datas' is not defined: forget password
+name 'otp_val' is not defined: forget password
+name 'otp_val' is not defined: forget password
+name 'datas' is not defined: forget password
+name 'datas' is not defined: forget password
+'User' object has no attribute 'is_email_verified': forget password
+'User' object has no attribute 'is_email_verified': forget password
+name 'User_filter' is not defined: forget password
+name 'User_filter' is not defined: forget password

@@ -41,6 +41,8 @@ class User(auth_models.AbstractBaseUser):
 
     roles = models.ForeignKey('role_master', blank=True, null=True, on_delete=models.CASCADE)
 
+    # rfid_scanned = models.ForeignKey('rfid_db_table',blank=True, null=True, on_delete=models.CASCADE)
+
     out_perms = models.BooleanField(default=False)
 
     
@@ -102,11 +104,15 @@ class role_master(models.Model):
 
 
 class rfid_db_table(models.Model):
+    user = models.ForeignKey(User,default=True, on_delete=models.CASCADE)
+
     rfid_value = models.TextField(blank=True, null=True,validators=[alphanumeric])
 
     created_at = models.DateTimeField(auto_now= True,null=True)
 
-    updated_at = models.DateTimeField(blank=True,null=True)
+    updated_at = models.DateTimeField(auto_now= True,null=True)
+
+    # count_value = models.IntegerField(max_length = 100, blank=True)
 
     def __str__(self):
         return str(self.rfid_value)

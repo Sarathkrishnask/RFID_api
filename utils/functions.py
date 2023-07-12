@@ -33,14 +33,14 @@ def send_mail_toTemplate(subject,mail_body,to_mail,from_mail):
         raise ex
     
 
-def generate_otp():
-    # Define possible characters for OTP
-    digits = "123456789"
-    # Initialize OTP variable
-    otp = ""
-    # Loop to generate 6 random digits
-    for i in range(4):
-        otp += randint.choice(digits)
-    # Return the OTP
-    return otp
+# def generate_otp():
+#     # Define possible characters for OTP
+#     digits = "123456789"
+#     # Initialize OTP variable
+#     otp = ""
+#     # Loop to generate 6 random digits
+#     for i in range(4):
+#         otp += randint.choice(digits)
+#     # Return the OTP
+#     return otp
         
