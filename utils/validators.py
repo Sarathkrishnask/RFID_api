@@ -60,7 +60,7 @@ def change_password_validators(data):
 Admin Email registeration
 """
 def admin_email_register_validators(data):
-    json_keys=['firstname','lastname','phone_number','email','password','confirm_password','bed_number','role','ward_number','hospital_number','rfid_rssi_valu']
+    json_keys=['firstname','lastname','phone_number','email','bed_number','ward_number','hospital_number','rfid_rssi_valu']
     for val in json_keys:
         if val not in dict.keys(data):
             return False

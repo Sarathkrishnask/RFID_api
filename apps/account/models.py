@@ -104,7 +104,7 @@ class role_master(models.Model):
 
 
 class rfid_db_table(models.Model):
-    user = models.ForeignKey(User,default=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User,default=True, on_delete=models.CASCADE, related_name='rfid_table')
 
     rfid_value = models.TextField(blank=True, null=True,validators=[alphanumeric])
 

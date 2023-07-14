@@ -35,6 +35,7 @@ other imports
 import json as j
 import logging
 import random as randint
+from decouple import config
 # from appsacmec_admin import models as admin_models
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -90,12 +91,16 @@ class UserRegister(APIView):
                 if validators.admin_email_register_validators(datas)==False:
                     return json.Response({"data":[]},"Required field is missing",400,False)
 
-                if datas["firstname"]=="" or datas["lastname"]=="" or datas["phone_number"]=="" or datas["email"]=="" or datas["password"] == "" or datas["confirm_password"]=="" or datas["role"]=="":
+                if datas["firstname"]=="" or datas["lastname"]=="" or datas["phone_number"]=="" or datas["email"]=="" or datas["rfid_rssi_valu"]=="":
                     return json.Response({"data":[]},"Field is empty",400,False)
                 
                 Users_data = models.User.objects
+                User_rfid = Users_data.filter(rfid_rssi_valu = datas["rfid_rssi_valu"])
                 User_filter = Users_data.filter(phone_number=datas['phone_number'])
                 User_email = Users_data.filter(email=datas['email'])
+
+                if User_rfid.exists():
+                    return json.Response({"data":[]},"Pfid value already exists!",400,False)
 
                 if User_filter.exists():
                     return json.Response({"data":[]},"Phone number already exists!",400,False)
@@ -103,17 +108,17 @@ class UserRegister(APIView):
                 if  User_email.exists():
                     return json.Response({"data":[]},"Email already exists!",400,False)
                 
-                if datas["password"].lower() != datas["confirm_password"].lower():
-                    return json.Response({"data":[]}, "Password and confirm password are not same", 400, False)
+                # if datas["password"].lower() != datas["confirm_password"].lower():
+                #     return json.Response({"data":[]}, "Password and confirm password are not same", 400, False)
 
-                if not models.role_master.objects.filter(id=datas['role']).exists():
-                    return json.Response({"data":[]},"There is no role for this type",400,False)
+                # if not models.role_master.objects.filter(id=datas['role']).exists():
+                #     return json.Response({"data":[]},"There is no role for this type",400,False)
 
-                rolelist = models.role_master.objects.filter(id=datas['role']).first()
+                rolelist = models.role_master.objects.filter(id=3).first()
     
                 if str(rolelist).lower() == "patient":
 
-                    Users_data.create(firstname=datas["firstname"],lastname=datas["lastname"],phone_number=datas['phone_number'],email=datas['email'],password=make_password(datas["password"]),roles_id=datas["role"],
+                    Users_data.create(firstname=datas["firstname"],lastname=datas["lastname"],phone_number=datas['phone_number'],email=datas['email'],roles_id=rolelist.id,
                                       bed_number=datas['bed_number'], hospital_number=datas['hospital_number'],rfid_rssi_valu=datas['rfid_rssi_valu'],ward_number=datas['ward_number'])
                     user_datas = models.User.objects.get(email=datas['email'])
                     user_Name_id = models.User.objects.filter(email=datas['email']).first()
@@ -288,7 +293,8 @@ class ScanRfid(APIView):
             if Users_data.filter(rfid_rssi_valu = datas['rfid_value']):
                 Users_data_=models.User.objects.filter(rfid_rssi_valu=datas['rfid_value']).first()
                 
-                user_email=Users_data_.email
+                # user_email=Users_data_.email
+                user_email = config("ADMIN_EMAIL")
                
 
                 rfid_table = models.rfid_db_table.objects
@@ -321,7 +327,7 @@ class rfid_suggester(generics.GenericAPIView):
     
     def get(self, request):
         try:
-            print("fdklfj")
+            # print("fdklfj")
             
             # serializer_=models.rfid_db_table.objects.all()
             # print(serializer_)
