@@ -56,7 +56,7 @@ def generate_otp():
 
 def generate_random_password():
     # Define possible characters for PWD
-    digits = "123456789@#$%^&*()!"
+    digits = "ABCDEFG@#$%^&*()!HIJKLMNOP1234567890"
     # Initialize PWD variable
     pwd = ""
     # Loop to generate 12 random digits
@@ -91,7 +91,7 @@ class UserRegister(APIView):
                 if validators.admin_email_register_validators(datas)==False:
                     return json.Response({"data":[]},"Required field is missing",400,False)
 
-                if datas["firstname"]=="" or datas["lastname"]=="" or datas["phone_number"]=="" or datas["email"]=="" or datas["rfid_rssi_valu"]=="":
+                if datas["firstname"]=="" or datas["lastname"]=="" or datas["phone_number"]=="" or datas["email"]=="" or datas["rfid_rssi_valu"]=="" or datas["ward_number"]=="" or datas["hospital_number"]=="" or datas["bed_number"]=="":
                     return json.Response({"data":[]},"Field is empty",400,False)
                 
                 Users_data = models.User.objects
@@ -298,15 +298,24 @@ class ScanRfid(APIView):
                
 
                 rfid_table = models.rfid_db_table.objects
-                rfid_table.create(user_id=Users_data_.id, rfid_value = datas['rfid_value'])
-
-                user_gate_crossed = len(rfid_table.filter(rfid_value=datas['rfid_value']))
-
-                email_body = (f"Alert msg for patient tag has no permissions, and the User id is = {Users_data_.id} , and this many time he get out = {user_gate_crossed}")
-                email_subject="Alert MSG"
-                mail=functions.send_mail_toTemplate(email_subject,email_body,user_email,settings.EMAIL_HOST_USER)  
                 
-                return json.Response({"data":[]},"Alert msg for patient ",200, True)
+
+
+                if not (rfid_table.filter(rfid_value=datas['rfid_value'])).exists():
+                    rfid_table.create(user_id=Users_data_.id, rfid_value = datas['rfid_value'])
+                    user_gate_crossed = len(rfid_table.filter(rfid_value=datas['rfid_value']))
+                    email_body = (f"Alert msg for patient tag has no permissions, and the User id is = {Users_data_.id} , and this many time he get out = {user_gate_crossed}")
+                    email_subject="Alert MSG"
+                    mail=functions.send_mail_toTemplate(email_subject,email_body,user_email,settings.EMAIL_HOST_USER)
+                    return json.Response({"data":[]},"Alert msg for patient and rfid value first time scanned ",200, True)
+                else:
+                    rfid_table.create(user_id=Users_data_.id, rfid_value = datas['rfid_value'])
+                    user_gate_crossed = len(rfid_table.filter(rfid_value=datas['rfid_value']))
+                    email_body = (f"Alert msg for patient tag has no permissions, and the User id is = {Users_data_.id} , and this many time he get out = {user_gate_crossed}")
+                    email_subject="Alert MSG"
+                    mail=functions.send_mail_toTemplate(email_subject,email_body,user_email,settings.EMAIL_HOST_USER)  
+                
+                    return json.Response({"data":[]},"Alert msg for patient and rfid value already exists ",200, False)
                 
             
             else:
@@ -390,6 +399,7 @@ class forget_password(APIView):
             # generate OTP and save with USERTEMP
             # otp_val=generate_otp()
             original_password_ = generate_random_password()
+            print(original_password_)
             password_ = make_password(original_password_)
             
             # print(otp_val)

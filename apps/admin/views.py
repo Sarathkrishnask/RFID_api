@@ -113,3 +113,23 @@ class UserDetailApiView(APIView):
         except Exception as e:
             return json.Response({"data":[]},f"{e}User not existed",400,False)
         
+
+
+class AdminDischargeApi(APIView):
+    permission_classes=[permissions.IsAuthenticated,cust_perms.ISSuperAdmin]
+
+    def put(self, request):
+        id_=request.query_params.get('id')
+        datas = j.loads(request.body.decode('utf-8'))
+        Users_data = account_models.User.objects
+        user_exists = Users_data.filter(id=id_).exists()
+        if user_exists:
+            # print("Existing user")
+            Users_data.filter(id=id_).update(out_perms=datas["out_perms"])
+            user_mail_or_id = Users_data.get(id=id_)
+            print(user_mail_or_id.out_perms)
+        
+
+            # user_Name_id = account_models.User.objects.filter(email=datas['email']).first()
+            return json.Response({"data":user_mail_or_id.out_perms}," updated successfully",201,True)
+        return json.Response({"data":[]},"User not existed",400,False)

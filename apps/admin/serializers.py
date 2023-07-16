@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 # from apps.account.serializers import rifd_table_suggester
-from apps.account.serializers import *
+# from apps.account.serializers import *
 from apps.account.models import *
 
 User = get_user_model()
