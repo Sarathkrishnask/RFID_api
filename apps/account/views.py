@@ -118,7 +118,7 @@ class UserRegister(APIView):
     
                 if str(rolelist).lower() == "patient":
 
-                    Users_data.create(firstname=datas["firstname"],lastname=datas["lastname"],phone_number=datas['phone_number'],email=datas['email'],roles_id=rolelist.id,
+                    Users_data.create(firstname=datas["firstname"],lastname=datas["lastname"],phone_number=datas['phone_number'],email=datas['email'],
                                       bed_number=datas['bed_number'], hospital_number=datas['hospital_number'],rfid_rssi_valu=datas['rfid_rssi_valu'],ward_number=datas['ward_number'])
                     user_datas = models.User.objects.get(email=datas['email'])
                     user_Name_id = models.User.objects.filter(email=datas['email']).first()
@@ -231,14 +231,64 @@ class ChangePassword(APIView):
             if datas["password"].lower() != datas["confirm_password"].lower():
                 return json.Response({"data":[]}, "Password and confirm password are not same", 400, False)
             
-            if Users_data.get(email=datas['email']).is_email_verified == False:
-                User_filter.update(password=make_password(datas["password"]),is_email_verified=True)
+            if Users_data.get(email=datas['email']):
+                User_filter.update(password=make_password(datas["password"]))
                 return json.Response({"data":[]},"Password changed successfully",200, True)
 
             User_filter.update(password=make_password(datas["password"]))
             return json.Response({"data":[]},"Password changed successfully",200, True)
         except Exception as e:
-            return json.Response({"data":[]},"Internal Server Error", 400,False)
+            return json.Response({"data":[e]},"Internal Server Error", 400,False)
+
+
+
+
+
+class VerifyForgotOTP(APIView):
+    """
+    Verify OTP for Forgot password
+    """
+    permission_classes=[permissions.AllowAny]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super(VerifyForgotOTP, self).dispatch(request, *args, **kwargs)
+
+    @csrf_exempt
+    def post(self,request):
+        datas = j.loads(request.body.decode('utf-8'))
+        try:
+            if validators.verify_email_otp_validators(datas) == False:
+                return json.Response({"data":[]},"Required field is missing",400,False)
+            
+            otp = datas['otp']
+            email = datas['email']
+            if email == "" :
+                return json.Response({"data":[]},"Field is empty",400,False)
+            if otp=="":
+                return json.Response({"data":[]},"Please enter OTP",400,False)
+            UserQuery = models.User.objects
+            OTPQuery = models.OTPAuth.objects
+            if not UserQuery.filter(email=email).exists():
+                return json.Response({"data":[]},"Please enter registered email",400,False)
+            User_name = UserQuery.filter(email=email).first()
+            
+            if not OTPQuery.filter(user_id=User_name.id,otp=otp).exists():
+                return json.Response({"data":[]},"Please enter valid Otp",400,False)
+            user_otp = OTPQuery.get(user_id=User_name.id,otp=otp)
+
+            # expire_ts = functions.verifyexpiry_time(user_otp.expired_by)
+
+            # if expire_ts[0] <= expire_ts[1]:
+            #     return json.Response({"data":[]},"OTP expired",400,False)
+            data = {"id":User_name.id}
+            return json.Response({"data":data}, "OTP verified successfully",200,True)
+        
+        except Exception as e:
+            return json.Response({"data":[e]},"Internal Server Error", 400, False)
+    
+
+
 
 
 # class ScanRfid(APIView):
@@ -302,21 +352,26 @@ class ScanRfid(APIView):
 
 
                 if not (rfid_table.filter(rfid_value=datas['rfid_value'])).exists():
-                    rfid_table.create(user_id=Users_data_.id, rfid_value = datas['rfid_value'])
-                    user_gate_crossed = len(rfid_table.filter(rfid_value=datas['rfid_value']))
-                    email_body = (f"Alert msg for patient tag has no permissions, and the User id is = {Users_data_.id} , and this many time he get out = {user_gate_crossed}")
-                    email_subject="Alert MSG"
-                    mail=functions.send_mail_toTemplate(email_subject,email_body,user_email,settings.EMAIL_HOST_USER)
-                    return json.Response({"data":[]},"Alert msg for patient and rfid value first time scanned ",200, True)
-                else:
-                    rfid_table.create(user_id=Users_data_.id, rfid_value = datas['rfid_value'])
-                    user_gate_crossed = len(rfid_table.filter(rfid_value=datas['rfid_value']))
-                    email_body = (f"Alert msg for patient tag has no permissions, and the User id is = {Users_data_.id} , and this many time he get out = {user_gate_crossed}")
-                    email_subject="Alert MSG"
-                    mail=functions.send_mail_toTemplate(email_subject,email_body,user_email,settings.EMAIL_HOST_USER)  
-                
-                    return json.Response({"data":[]},"Alert msg for patient and rfid value already exists ",200, False)
-                
+                    if(Users_data_.out_perms == True):
+                        rfid_table.create(user_id=Users_data_.id, rfid_value = datas['rfid_value'])
+                        user_gate_crossed = len(rfid_table.filter(rfid_value=datas['rfid_value']))
+                        email_body = (f"Alert msg for patient tag has no permissions, and the User id is = {Users_data_.id} , and this many time he get out = {user_gate_crossed}")
+                        email_subject="Alert MSG"
+                        mail=functions.send_mail_toTemplate(email_subject,email_body,user_email,settings.EMAIL_HOST_USER)
+                        return json.Response({"data":[]},"Alert msg for patient and rfid value first time scanned ",200, True)
+                    else:
+                        return json.Response({"data":[]},"User does not have permission ",200, False)
+                elif (rfid_table.filter(rfid_value=datas['rfid_value'])).exists():
+                    if(Users_data_.out_perms == True):
+                        rfid_table.create(user_id=Users_data_.id, rfid_value = datas['rfid_value'])
+                        user_gate_crossed = len(rfid_table.filter(rfid_value=datas['rfid_value']))
+                        email_body = (f"Alert msg for patient tag has no permissions, and the User id is = {Users_data_.id} , and this many time he get out = {user_gate_crossed}")
+                        email_subject="Alert MSG"
+                        mail=functions.send_mail_toTemplate(email_subject,email_body,user_email,settings.EMAIL_HOST_USER)  
+                    
+                        return json.Response({"data":[]},"Alert msg for patient and rfid value already exists ",200, False)
+                    else:
+                        return json.Response({"data":[]},"User does not have permission ",200, False)
             
             else:
                 return json.Response({"data":[]},"rfid_rssi_value not exist",200, True)
@@ -354,33 +409,33 @@ class rfid_suggester(generics.GenericAPIView):
 
 
 
-# class ForgetAccount(APIView):
-#     permission_classes = [permissions.AllowAny]
+class ForgetAccount(APIView):
+    permission_classes = [permissions.AllowAny]
 
-#     def post(self,request):
-#         try:
-#             data=request.data
-#             email=data['email']
-#             check_email=User.objects.filter(email=email).exists()
-#             if not check_email:
-#                 # res = {"status":False,'message':'Kindly Enter The Registered email','data':[]}
-#                 return json.Response({'data':[]},f'{e}Internal Server Error',400,False)
+    def post(self,request):
+        try:
+            data=request.data
+            email=data['email']
+            check_email=User.objects.filter(email=email).exists()
+            if not check_email:
+                # res = {"status":False,'message':'Kindly Enter The Registered email','data':[]}
+                return json.Response({'data':[]},f'{e}Internal Server Error',400,False)
             
-#             user=models.User.objects.filter(email=email).last()
-#             # generate OTP and save with USERTEMP
-#             otp_val=generate_otp()
-#             # otp_val = 1234
-#             email_body = (f"Use This Otp for verification {otp_val}")
-#             email_subject="forget_password"
-#             mail=functions.send_mail_toTemplate(email_subject,email_body,email,settings.EMAIL_HOST_USER)  
+            user=models.User.objects.filter(email=email).last()
+            # generate OTP and save with USERTEMP
+            otp_val=generate_otp()
+            # otp_val = 1234
+            email_body = (f"Use This Otp for verification {otp_val}")
+            email_subject="forget_password"
+            mail=functions.send_mail_toTemplate(email_subject,email_body,email,settings.EMAIL_HOST_USER)  
             
-#             save_temp=models.OTPAuth.objects.create(otp=otp_val,user_id=user.id)
+            save_temp=models.OTPAuth.objects.update(otp=otp_val,user_id=user.id)
             
-#             return json.Response({"data":[]},"OTP send successfully to given email",200, True)
+            return json.Response({"data":[]},"OTP send successfully to given email",200, True)
                        
-#         except Exception as e:
-#             logger.info(f"{e}: forget password")
-#             return json.Response({"data":[]},f"{e}Internal Server Error", 400,False)
+        except Exception as e:
+            logger.info(f"{e}: forget password")
+            return json.Response({"data":[]},f"{e}Internal Server Error", 400,False)
 
 
 class forget_password(APIView):
@@ -404,7 +459,7 @@ class forget_password(APIView):
             
             # print(otp_val)
             # otp_val=123555
-            email_body = (f"Use This Otp for verification {original_password_}")
+            email_body = (f"Use This New Password For Login Your Account{original_password_}")
             email_subject="forget_password"
 
 
@@ -414,7 +469,7 @@ class forget_password(APIView):
             if Users_data.get(email=data['email']):
                 Users_data.update(password=password_)
 
-            Users_data.update(password=password_)
+            # Users_data.update(password=password_)
             
             return json.Response({"data":[]},"OTP send successfully to given email",200, True)
                        

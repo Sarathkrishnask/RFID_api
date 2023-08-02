@@ -36,6 +36,17 @@ def validate_json(value):
 
 
 """
+verify email otp validators
+"""
+def verify_email_otp_validators(data):
+    json_keys = ['otp','email']
+    for val in json_keys:
+        if val not in dict.keys(data):
+            return False
+    return True
+
+
+"""
 Email login validators
 """
 def Email_Login_Validators(data):

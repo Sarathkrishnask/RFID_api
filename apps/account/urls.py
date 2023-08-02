@@ -10,7 +10,8 @@ urlpatterns = [
     path('changepassword/',views.ChangePassword.as_view(),name='changepassword'),
     path('scan/',views.ScanRfid.as_view(),name='scan'),
     path('get_rfids/',views.rfid_suggester.as_view(),name='rfid_suggester'),
-    # path('forget_accnt/',views.ForgetAccount.as_view(),name='forget_accnt'),
+    path('verifyforgototp/',views.VerifyForgotOTP.as_view(),name='verifyforgototp'),
+    path('forget_accnt/',views.ForgetAccount.as_view(),name='forget_accnt'),
     path('forget_password/',views.forget_password.as_view(),name='forget_password'),
     # path('role_view/',views.roles_master.as_view(),name='roleview'),
 
